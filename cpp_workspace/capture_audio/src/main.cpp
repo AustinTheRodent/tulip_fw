@@ -35,8 +35,7 @@ int main()
   int offset_in_page;
   uint32_t read_result;
   uint32_t i2s_2_ps_fifo_fill;
-  uint32_t i2s_2_ps_l_chan[FIFO_FILL_FLAG];
-  uint32_t i2s_2_ps_r_chan[FIFO_FILL_FLAG];
+  uint32_t i2s_2_ps_lr_chan[2*FIFO_FILL_FLAG];
   uint32_t write_value;
 
   void *map_base;
@@ -92,9 +91,9 @@ int main()
       for (i = 0 ; i < i2s_2_ps_fifo_fill ; i++)
       {
         virt_addr = (char *)map_base + I2S_2_PS_FIFO_READ_L;
-        i2s_2_ps_l_chan[i] = *(volatile uint32_t*)virt_addr;
+        i2s_2_ps_lr_chan[2*i] = *(volatile uint32_t*)virt_addr;
         virt_addr = (char *)map_base + I2S_2_PS_FIFO_READ_R;
-        i2s_2_ps_r_chan[i] = *(volatile uint32_t*)virt_addr;
+        i2s_2_ps_lr_chan[i+1] = *(volatile uint32_t*)virt_addr;
       }
     }
   }
@@ -104,9 +103,9 @@ int main()
   for (i = 0 ; i < i2s_2_ps_fifo_fill ; i++)
   {
     virt_addr = (char *)map_base + I2S_2_PS_FIFO_READ_L;
-    i2s_2_ps_l_chan[i] = *(volatile uint32_t*)virt_addr;
+    i2s_2_ps_lr_chan[2*i] = *(volatile uint32_t*)virt_addr;
     virt_addr = (char *)map_base + I2S_2_PS_FIFO_READ_R;
-    i2s_2_ps_r_chan[i] = *(volatile uint32_t*)virt_addr;
+    i2s_2_ps_lr_chan[2*i+1] = *(volatile uint32_t*)virt_addr;
   }
   
   printf("exiting\n");
