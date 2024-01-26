@@ -7,6 +7,7 @@
 #include "KR260_TULIP_REGISTERS.h"
 
 #define TULIP_ADDRESS 0x80010000
+#define FIFO_FILL_FLAG 256
 
 static volatile bool keep_running = true;
 
@@ -25,6 +26,7 @@ static void* userInput_thread(void*)
 
 int main()
 {
+  int i;
   void *virt_addr;
   uint64_t offset = 0;
   int pagesize;
@@ -32,6 +34,10 @@ int main()
   uint64_t page_offset;
   int offset_in_page;
   uint32_t read_result;
+  uint32_t i2s_2_ps_fifo_fill;
+  uint32_t i2s_2_ps_l_chan[FIFO_FILL_FLAG];
+  uint32_t i2s_2_ps_r_chan[FIFO_FILL_FLAG];
+  uint32_t write_value;
 
   void *map_base;
   int mem_fd;
@@ -72,13 +78,37 @@ int main()
     return 0;
   }
 
+  write_value = read_result | CONTROL_I2S_2_PS_ENABLE ;
+  *(volatile uint32_t*)virt_addr = write_value;
+
   (void) pthread_create(&tId, 0, userInput_thread, 0);
 
   while (keep_running)
   {
-    //printf("woah\n");
-    // this will run until you press "enter"
+    virt_addr = (char *)map_base + I2S_2_PS_FIFO_COUNT;
+    i2s_2_ps_fifo_fill = *(volatile uint32_t*)virt_addr;
+    if (i2s_2_ps_fifo_fill >= FIFO_FILL_FLAG)
+    {
+      for (i = 0 ; i < i2s_2_ps_fifo_fill ; i++)
+      {
+        virt_addr = (char *)map_base + I2S_2_PS_FIFO_READ_L;
+        i2s_2_ps_l_chan[i] = *(volatile uint32_t*)virt_addr;
+        virt_addr = (char *)map_base + I2S_2_PS_FIFO_READ_R;
+        i2s_2_ps_r_chan[i] = *(volatile uint32_t*)virt_addr;
+      }
+    }
   }
+  
+  virt_addr = (char *)map_base + I2S_2_PS_FIFO_COUNT;
+  i2s_2_ps_fifo_fill = *(volatile uint32_t*)virt_addr;
+  for (i = 0 ; i < i2s_2_ps_fifo_fill ; i++)
+  {
+    virt_addr = (char *)map_base + I2S_2_PS_FIFO_READ_L;
+    i2s_2_ps_l_chan[i] = *(volatile uint32_t*)virt_addr;
+    virt_addr = (char *)map_base + I2S_2_PS_FIFO_READ_R;
+    i2s_2_ps_r_chan[i] = *(volatile uint32_t*)virt_addr;
+  }
+  
   printf("exiting\n");
 
   (void) pthread_join(tId, NULL);
