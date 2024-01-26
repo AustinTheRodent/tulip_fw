@@ -9,6 +9,7 @@
 
 #define TULIP_ADDRESS 0x80010000
 #define FIFO_FILL_FLAG 256
+#define MAX_SAMPS 12500000
 
 static volatile bool keep_running = true;
 
@@ -28,6 +29,7 @@ static void* userInput_thread(void*)
 int main()
 {
   int i;
+  uint32_t sample_counter = 0;
   void *virt_addr;
   uint64_t offset = 0;
   int pagesize;
@@ -98,6 +100,11 @@ int main()
         i2s_2_ps_lr_chan[i+1] = *(volatile uint32_t*)virt_addr;
       }
       fwrite(i2s_2_ps_lr_chan, sizeof(uint32_t), 2*i2s_2_ps_fifo_fill, ptr);
+      sample_counter = sample_counter + i2s_2_ps_fifo_fill;
+      if (sample_counter >= MAX_SAMPS)
+      {
+        keep_running = false;
+      }
     }
   }
   
