@@ -92,15 +92,15 @@ int main()
     i2s_2_ps_fifo_fill = *(volatile uint32_t*)virt_addr;
     if (i2s_2_ps_fifo_fill >= FIFO_FILL_FLAG)
     {
-      for (i = 0 ; i < i2s_2_ps_fifo_fill ; i++)
+      for (i = 0 ; i < FIFO_FILL_FLAG ; i++)
       {
         virt_addr = (char *)map_base + I2S_2_PS_FIFO_READ_L;
         i2s_2_ps_lr_chan[2*i] = *(volatile uint32_t*)virt_addr;
         virt_addr = (char *)map_base + I2S_2_PS_FIFO_READ_R;
         i2s_2_ps_lr_chan[2*i+1] = *(volatile uint32_t*)virt_addr;
       }
-      fwrite(i2s_2_ps_lr_chan, sizeof(uint32_t), 2*i2s_2_ps_fifo_fill, ptr);
-      sample_counter = sample_counter + i2s_2_ps_fifo_fill;
+      fwrite(i2s_2_ps_lr_chan, sizeof(uint32_t), 2*FIFO_FILL_FLAG, ptr);
+      sample_counter = sample_counter + FIFO_FILL_FLAG;
       if (sample_counter >= MAX_SAMPS)
       {
         keep_running = false;
@@ -110,6 +110,10 @@ int main()
   
   virt_addr = (char *)map_base + I2S_2_PS_FIFO_COUNT;
   i2s_2_ps_fifo_fill = *(volatile uint32_t*)virt_addr;
+  if (i2s_2_ps_fifo_fill > FIFO_FILL_FLAG)
+  {
+    i2s_2_ps_fifo_fill = FIFO_FILL_FLAG;
+  }
   for (i = 0 ; i < i2s_2_ps_fifo_fill ; i++)
   {
     virt_addr = (char *)map_base + I2S_2_PS_FIFO_READ_L;
