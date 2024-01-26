@@ -1,0 +1,1 @@
+gcc   -c -o obj/bin_to_txt.o src/bin_to_txt.c
