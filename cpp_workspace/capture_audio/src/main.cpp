@@ -4,6 +4,7 @@
 #include <fcntl.h>
 #include <tgmath.h>
 #include <unistd.h>
+#include<stdio.h>
 #include "KR260_TULIP_REGISTERS.h"
 
 #define TULIP_ADDRESS 0x80010000
@@ -37,6 +38,7 @@ int main()
   uint32_t i2s_2_ps_fifo_fill;
   uint32_t i2s_2_ps_lr_chan[2*FIFO_FILL_FLAG];
   uint32_t write_value;
+  FILE *ptr;
 
   void *map_base;
   int mem_fd;
@@ -79,7 +81,7 @@ int main()
 
   write_value = read_result | CONTROL_I2S_2_PS_ENABLE ;
   *(volatile uint32_t*)virt_addr = write_value;
-
+  ptr = fopen("output_file.bin","wb");
   (void) pthread_create(&tId, 0, userInput_thread, 0);
 
   while (keep_running)
@@ -95,6 +97,7 @@ int main()
         virt_addr = (char *)map_base + I2S_2_PS_FIFO_READ_R;
         i2s_2_ps_lr_chan[i+1] = *(volatile uint32_t*)virt_addr;
       }
+      fwrite(i2s_2_ps_lr_chan, sizeof(uint32_t), 2*i2s_2_ps_fifo_fill, ptr);
     }
   }
   
@@ -107,7 +110,9 @@ int main()
     virt_addr = (char *)map_base + I2S_2_PS_FIFO_READ_R;
     i2s_2_ps_lr_chan[2*i+1] = *(volatile uint32_t*)virt_addr;
   }
-  
+  fwrite(i2s_2_ps_lr_chan, sizeof(uint32_t), 2*i2s_2_ps_fifo_fill, ptr);
+
+  fclose(ptr);
   printf("exiting\n");
 
   (void) pthread_join(tId, NULL);
