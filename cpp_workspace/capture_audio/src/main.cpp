@@ -9,7 +9,7 @@
 
 #define TULIP_ADDRESS 0x80010000
 #define FIFO_FILL_FLAG 256
-#define MAX_SAMPS 12500000
+#define MAX_SAMPS (12500000-2048)
 
 static volatile bool keep_running = true;
 
