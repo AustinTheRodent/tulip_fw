@@ -97,7 +97,7 @@ int main()
         virt_addr = (char *)map_base + I2S_2_PS_FIFO_READ_L;
         i2s_2_ps_lr_chan[2*i] = *(volatile uint32_t*)virt_addr;
         virt_addr = (char *)map_base + I2S_2_PS_FIFO_READ_R;
-        i2s_2_ps_lr_chan[i+1] = *(volatile uint32_t*)virt_addr;
+        i2s_2_ps_lr_chan[2*i+1] = *(volatile uint32_t*)virt_addr;
       }
       fwrite(i2s_2_ps_lr_chan, sizeof(uint32_t), 2*i2s_2_ps_fifo_fill, ptr);
       sample_counter = sample_counter + i2s_2_ps_fifo_fill;
