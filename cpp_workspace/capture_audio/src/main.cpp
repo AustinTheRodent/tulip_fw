@@ -81,7 +81,7 @@ int main()
     return 0;
   }
 
-  write_value = control_reg_read_result | CONTROL_I2S_2_PS_ENABLE ;
+  write_value = control_reg_read_result | CONTROL_I2S_2_PS_ENABLE;
   *(volatile uint32_t*)virt_addr = write_value;
   ptr = fopen("output_file.bin","wb");
   (void) pthread_create(&tId, 0, userInput_thread, 0);
@@ -129,7 +129,9 @@ int main()
   (void) pthread_join(tId, NULL);
 
   virt_addr = (char *)map_base + CONTROL;
-  *(volatile uint32_t*)virt_addr = control_reg_read_result;
+  control_reg_read_result = *(volatile uint32_t*)virt_addr;
+  write_value = control_reg_read_result & (~CONTROL_I2S_2_PS_ENABLE);
+  *(volatile uint32_t*)virt_addr = write_value;
 
   munmap((void *)map_base, pagesize);
   close(mem_fd);
