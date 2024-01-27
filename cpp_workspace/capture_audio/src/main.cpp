@@ -36,7 +36,7 @@ int main()
   uint64_t page_base;
   uint64_t page_offset;
   int offset_in_page;
-  uint32_t read_result;
+  uint32_t control_reg_read_result;
   uint32_t i2s_2_ps_fifo_fill;
   uint32_t i2s_2_ps_lr_chan[2*FIFO_FILL_FLAG];
   uint32_t write_value;
@@ -71,9 +71,9 @@ int main()
   }
 
   virt_addr = (char *)map_base + CONTROL;
-  read_result = *(volatile uint32_t*)virt_addr;
+  control_reg_read_result = *(volatile uint32_t*)virt_addr;
 
-  if ( ((read_result & CONTROL_SW_RESETN) == 0) || ((read_result & CONTROL_I2S_ENABLE) == 0) )
+  if ( ((control_reg_read_result & CONTROL_SW_RESETN) == 0) || ((control_reg_read_result & CONTROL_I2S_ENABLE) == 0) )
   {
     printf("Tulip I2S is not enabled, did you initialize the codec?\n");
     munmap((void *)map_base, pagesize);
@@ -81,7 +81,7 @@ int main()
     return 0;
   }
 
-  write_value = read_result | CONTROL_I2S_2_PS_ENABLE ;
+  write_value = control_reg_read_result | CONTROL_I2S_2_PS_ENABLE ;
   *(volatile uint32_t*)virt_addr = write_value;
   ptr = fopen("output_file.bin","wb");
   (void) pthread_create(&tId, 0, userInput_thread, 0);
@@ -127,6 +127,9 @@ int main()
   printf("exiting\n");
 
   (void) pthread_join(tId, NULL);
+
+  virt_addr = (char *)map_base + CONTROL;
+  *(volatile uint32_t*)virt_addr = control_reg_read_result;
 
   munmap((void *)map_base, pagesize);
   close(mem_fd);
