@@ -83,7 +83,7 @@ int main()
 
   write_value = control_reg_read_result | CONTROL_I2S_2_PS_ENABLE;
   *(volatile uint32_t*)virt_addr = write_value;
-  ptr = fopen("output_file.bin","wb");
+  ptr = fopen("/home/ubuntu/captures/capture.bin","wb");
   (void) pthread_create(&tId, 0, userInput_thread, 0);
 
   while (keep_running)
