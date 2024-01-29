@@ -83,7 +83,21 @@ int main()
 
   write_value = control_reg_read_result | CONTROL_I2S_2_PS_ENABLE;
   *(volatile uint32_t*)virt_addr = write_value;
+
   ptr = fopen("/home/ubuntu/captures/capture.bin","wb");
+  if (ptr == NULL)
+  {
+    perror("Failed: could not open /home/ubuntu/captures/capture.bin\n");
+
+    munmap((void *)map_base, pagesize);
+    close(mem_fd);
+
+    write_value = control_reg_read_result & (~CONTROL_I2S_2_PS_ENABLE);
+    *(volatile uint32_t*)virt_addr = write_value;
+
+    return 0;
+  }
+
   (void) pthread_create(&tId, 0, userInput_thread, 0);
 
   while (keep_running)
