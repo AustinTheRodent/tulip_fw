@@ -198,7 +198,8 @@ void codec_setup(WM8960& codec)
 
   //codec.setADCDIV(0); // Default is 000 (what we need for 44.1KHz/48kHz)
   //codec.setDACDIV(0); // Default is 000 (what we need for 44.1KHz/48kHz)
-  codec.setWL(WM8960_WL_16BIT);
+  //codec.setWL(WM8960_WL_16BIT);
+  codec.setWL(WM8960_WL_32BIT);
 
   //codec.enablePeripheralMode();
   printf("set master mode\n");

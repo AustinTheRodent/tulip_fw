@@ -107,6 +107,8 @@ int main()
 
   (void) pthread_create(&tId, 0, userInput_thread, 0);
 
+  printf("capture_size_samples: %u\n", capture_size_samples);
+
   while (keep_running)
   {
     virt_addr = (char *)map_base + PS_2_I2S_FIFO_COUNT;
