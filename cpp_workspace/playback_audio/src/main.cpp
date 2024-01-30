@@ -38,6 +38,7 @@ int main()
   uint32_t capture_size_bytes;
   uint32_t capture_size_samples;
   uint32_t samples_read = 0;
+  uint32_t samples_to_read;
   uint32_t control_reg_read_result;
   uint32_t ps_2_i2s_fifo_avail;
   uint32_t ps_2_i2s_lr_chan[2*FIFO_FILL_FLAG];
@@ -112,14 +113,18 @@ int main()
     ps_2_i2s_fifo_avail = *(volatile uint32_t*)virt_addr;
     if (ps_2_i2s_fifo_avail >= FIFO_FILL_FLAG)
     {
-      if (capture_size_samples - samples_read <= ps_2_i2s_fifo_avail)
+      if (capture_size_samples - samples_read <= FIFO_FILL_FLAG)
       {
-        ps_2_i2s_fifo_avail = capture_size_samples - samples_read;
+        samples_to_read = capture_size_samples - samples_read;
         keep_running = false;
       }
-      fread(ps_2_i2s_lr_chan, sizeof(uint32_t), 2*ps_2_i2s_fifo_avail, ptr);
-      samples_read = samples_read + ps_2_i2s_fifo_avail;
-      for (i = 0 ; i < ps_2_i2s_fifo_avail ; i++)
+      else
+      {
+        samples_to_read = FIFO_FILL_FLAG;
+      }
+      fread(ps_2_i2s_lr_chan, sizeof(uint32_t), 2*samples_to_read, ptr);
+      samples_read = samples_read + samples_to_read;
+      for (i = 0 ; i < samples_to_read ; i++)
       {
         virt_addr = (char *)map_base + PS_2_I2S_FIFO_WRITE_L;
         *(volatile uint32_t*)virt_addr = ps_2_i2s_lr_chan[2*i];
