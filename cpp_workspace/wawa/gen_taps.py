@@ -45,46 +45,41 @@ def main(Fc, Q, G, Type, output_dir, Fs=48000):
   IIR_TAP_DEPTH = 3
 
 
-  try:
-    if len(Fc) == 1:
-      Fc_list = [Fc[0] for i in range(len(Fc))]
-    else:
-      Fc_list = Fc
-  except:
-    Fc_list = [Fc for i in range(len(Fc))]
+  if isinstance(Fc, (list, tuple, np.ndarray)) == False:
+    Fc_list = [Fc]
+  else:
+    Fc_list = Fc
 
 
-  try:
-    if len(Q) == 1:
-      Q_list = [Q[0] for i in range(len(Fc))]
-    else:
-      Q_list = Q
-  except:
+  if isinstance(Q, (list, tuple, np.ndarray)) == False:
     Q_list = [Q for i in range(len(Fc))]
+  else:
+    Q_list = Q
 
 
-  try:
-    if len(G) == 1:
-      G_list = [G[0] for i in range(len(Fc))]
-    else:
-      G_list = G
-  except:
+  if isinstance(G, (list, tuple, np.ndarray)) == False:
     G_list = [G for i in range(len(Fc))]
+  else:
+    G_list = G
 
 
-  try:
-    if len(Type) == 1:
-      Type_list = [Type[0] for i in range(len(Fc))]
-    else:
-      Type_list = Type
-  except:
+  if isinstance(Type, (list, tuple, np.ndarray)) == False:
     Type_list = [Type for i in range(len(Fc))]
+  else:
+    Type_list = Type
 
 
   if len(Fc_list) != len(Type_list) or \
      len(Fc_list) != len(G_list) or \
      len(Fc_list) != len(Q_list):
+
     print("Error: List lengths differ")
+
+    print("len(Fc_list)   : %i" % len(Fc_list))
+    print("len(Type_list) : %i" % len(Type_list))
+    print("len(G_list)    : %i" % len(G_list))
+    print("len(Q_list)    : %i" % len(Q_list))
+
     return
 
   b_taps_array = np.zeros(len(Fc_list)*IIR_TAP_DEPTH, dtype=np.int64)
@@ -110,13 +105,13 @@ if __name__ == "__main__":
   Fc_start = 20
   Fc_step = 10
   N = 256
+  Fc = np.arange(Fc_start, Fc_start+N*Fc_step, Fc_step, dtype=np.float64)
 
   Q = 0.5
   G = 20 # dB
   Type = "peak"
   output_dir = "."
 
-  Fc = np.arange(Fc_start, Fc_start+N*Fc_step, Fc_step, dtype=np.float64)
   main(Fc, Q, G, Type, output_dir)
 
 
