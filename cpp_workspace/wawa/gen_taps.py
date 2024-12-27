@@ -1,6 +1,8 @@
 #!/bin/python
 
 import numpy as np
+import scipy as sp
+import matplotlib.pyplot as plt
 
 # Function to calculate biquad coefficients for each band
 def calc_biquad(frequency, filter_type, gain, fs, Q):
@@ -107,12 +109,50 @@ if __name__ == "__main__":
   N = 256
   Fc = np.arange(Fc_start, Fc_start+N*Fc_step, Fc_step, dtype=np.float64)
 
-  Q = 0.5
+  k = 0.5
+  Q_min = 0.030
+  Q_max = 2.0
+  Q = 10**(1-k*(np.arange(0, N, 1, dtype=float)/N))/10
+  Q = 1-Q
+  Q = Q / ((np.max(Q)-np.min(Q)))
+  Q = Q * (Q_max-Q_min) + Q_min
+
   G = 20 # dB
   Type = "peak"
   output_dir = "."
 
   main(Fc, Q, G, Type, output_dir)
 
+  filter_bank = {}
+
+  filter_bank["b_int"] = np.fromfile("./b_taps.bin", dtype=np.int64)
+  filter_bank["a_int"] = np.fromfile("./a_taps.bin", dtype=np.int64)
+
+  post_filter_gain = 15 # dB
+
+  filter_bank["b"] = np.zeros([256, 3], dtype=np.float64)
+  filter_bank["a"] = np.zeros([256, 3], dtype=np.float64)
+  for i in range(256):
+    filter_bank["b"][i] = np.float64(filter_bank["b_int"][i*3:i*3+3] / 2**61)
+    filter_bank["a"][i] = np.float64(filter_bank["a_int"][i*3:i*3+3] / 2**61)
+
+  filter_bank["b"] = filter_bank["b"] * 10**(post_filter_gain/20)
+
+  x = np.zeros(2**13, dtype=np.float64)
+  x[256] = 1.0
+
+  w = np.arange(0, 1, 1/len(x), dtype=float)*48000
+  
+  plt.figure()
+  plt.xlabel("Frequency (Hz)")
+  plt.ylabel("Gain (dB)")
+  plt.grid()
+  for i in np.arange(0, 256, 16, dtype=int):
+  #for i in np.arange(0, 16, 1, dtype=int):
+    conv_o = sp.signal.lfilter(filter_bank["b"][i], filter_bank["a"][i], x)
+    fft_out = 20*np.log10(np.abs((sp.fft.fft(conv_o))))
+    plt.plot(w, fft_out)
+
+  plt.show()
 
 
