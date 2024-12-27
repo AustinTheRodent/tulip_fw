@@ -103,29 +103,24 @@ def main(Fc, Q, G, Type, output_dir, Fs=48000):
   a_taps_array.tofile(output_dir + "/a_taps.bin")
 
 if __name__ == "__main__":
-#  Fc_start = 20
-#  Fc_step = 10
-#  N = 256
-#  Fc = np.arange(Fc_start, Fc_start+N*Fc_step, Fc_step, dtype=np.float64)
-#
-#  k = 0.5
-#  Q_min = 0.027
-#  Q_max = 2.0
-#  Q = 10**(1-k*(np.arange(0, N, 1, dtype=float)/N))/10
-#  Q = 1-Q
-#  Q = Q / ((np.max(Q)-np.min(Q)))
-#  Q = Q * (Q_max-Q_min) + Q_min
 
   Fc_start = 1100
   Fc_step = 15
   N = 256
   Fc = np.arange(Fc_start, Fc_start+N*Fc_step, Fc_step, dtype=np.float64)
 
-  Q = 4.0
+  #Q = 4.0
+
+  k = 0.5
+  Q_start = 4.0
+  Q_end = 1.0
+  Q = 10**(1-k*(np.arange(0, N, 1, dtype=float)/N))/10
+  Q = 1-Q
+  Q = Q / ((np.max(Q)-np.min(Q)))
+  Q = Q * (Q_end-Q_start) + Q_start
 
   G = 20 # dB
   Type = ["low" for i in range(256)]
-
 
   output_dir = "."
 
@@ -150,6 +145,9 @@ if __name__ == "__main__":
   x[256] = 1.0
 
   w = np.arange(0, 1, 1/len(x), dtype=float)*48
+
+  plt.figure()
+  plt.plot(Q)
 
   plt.figure()
   plt.xlabel("Frequency (kHz)")
