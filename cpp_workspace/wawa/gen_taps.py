@@ -64,7 +64,6 @@ def main(Fc, Q, G, Type, output_dir, Fs=48000):
   else:
     G_list = G
 
-
   if isinstance(Type, (list, tuple, np.ndarray)) == False:
     Type_list = [Type for i in range(len(Fc))]
   else:
@@ -104,21 +103,30 @@ def main(Fc, Q, G, Type, output_dir, Fs=48000):
   a_taps_array.tofile(output_dir + "/a_taps.bin")
 
 if __name__ == "__main__":
-  Fc_start = 20
-  Fc_step = 10
+#  Fc_start = 20
+#  Fc_step = 10
+#  N = 256
+#  Fc = np.arange(Fc_start, Fc_start+N*Fc_step, Fc_step, dtype=np.float64)
+#
+#  k = 0.5
+#  Q_min = 0.027
+#  Q_max = 2.0
+#  Q = 10**(1-k*(np.arange(0, N, 1, dtype=float)/N))/10
+#  Q = 1-Q
+#  Q = Q / ((np.max(Q)-np.min(Q)))
+#  Q = Q * (Q_max-Q_min) + Q_min
+
+  Fc_start = 1100
+  Fc_step = 15
   N = 256
   Fc = np.arange(Fc_start, Fc_start+N*Fc_step, Fc_step, dtype=np.float64)
 
-  k = 0.5
-  Q_min = 0.030
-  Q_max = 2.0
-  Q = 10**(1-k*(np.arange(0, N, 1, dtype=float)/N))/10
-  Q = 1-Q
-  Q = Q / ((np.max(Q)-np.min(Q)))
-  Q = Q * (Q_max-Q_min) + Q_min
+  Q = 4.0
 
   G = 20 # dB
-  Type = "peak"
+  Type = ["low" for i in range(256)]
+
+
   output_dir = "."
 
   main(Fc, Q, G, Type, output_dir)
@@ -128,7 +136,7 @@ if __name__ == "__main__":
   filter_bank["b_int"] = np.fromfile("./b_taps.bin", dtype=np.int64)
   filter_bank["a_int"] = np.fromfile("./a_taps.bin", dtype=np.int64)
 
-  post_filter_gain = 15 # dB
+  post_filter_gain = 0 # dB
 
   filter_bank["b"] = np.zeros([256, 3], dtype=np.float64)
   filter_bank["a"] = np.zeros([256, 3], dtype=np.float64)
@@ -138,20 +146,19 @@ if __name__ == "__main__":
 
   filter_bank["b"] = filter_bank["b"] * 10**(post_filter_gain/20)
 
-  x = np.zeros(2**13, dtype=np.float64)
+  x = np.zeros(2**14, dtype=np.float64)
   x[256] = 1.0
 
-  w = np.arange(0, 1, 1/len(x), dtype=float)*48000
-  
+  w = np.arange(0, 1, 1/len(x), dtype=float)*48
+
   plt.figure()
-  plt.xlabel("Frequency (Hz)")
+  plt.xlabel("Frequency (kHz)")
   plt.ylabel("Gain (dB)")
   plt.grid()
   for i in np.arange(0, 256, 16, dtype=int):
-  #for i in np.arange(0, 16, 1, dtype=int):
     conv_o = sp.signal.lfilter(filter_bank["b"][i], filter_bank["a"][i], x)
     fft_out = 20*np.log10(np.abs((sp.fft.fft(conv_o))))
-    plt.plot(w, fft_out)
+    plt.plot(w[0:int(len(w)/2)], fft_out[0:int(len(w)/2)])
 
   plt.show()
 
